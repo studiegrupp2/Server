@@ -1,17 +1,75 @@
 {
   "format": 1,
   "restore": {
-    "/Users/isakgunnardo/Ecutbildning/backend1/Server/Server.csproj": {}
+    "/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/Server.csproj": {}
   },
   "projects": {
-    "/Users/isakgunnardo/Ecutbildning/backend1/Server/Server.csproj": {
+    "/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/isakgunnardo/Ecutbildning/backend1/Server/Server.csproj",
+        "projectUniqueName": "/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/Server.csproj",
         "projectName": "Server",
-        "projectPath": "/Users/isakgunnardo/Ecutbildning/backend1/Server/Server.csproj",
+        "projectPath": "/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/Server.csproj",
         "packagesPath": "/Users/isakgunnardo/.nuget/packages/",
-        "outputPath": "/Users/isakgunnardo/Ecutbildning/backend1/Server/obj/",
+        "outputPath": "/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/isakgunnardo/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "/usr/local/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Shared/Shared.csproj": {
+                "projectPath": "/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Shared/Shared.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.100/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Shared/Shared.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Shared/Shared.csproj",
+        "projectName": "Shared",
+        "projectPath": "/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Shared/Shared.csproj",
+        "packagesPath": "/Users/isakgunnardo/.nuget/packages/",
+        "outputPath": "/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Shared/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/isakgunnardo/.nuget/NuGet/NuGet.Config"
