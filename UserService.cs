@@ -10,15 +10,12 @@ public interface IUserService
     void Logout();
 }
 
-
-
 public interface IUserRepository
 {
     void Save (User user);
     User? GetUserByUserNameAndPassword(string userName, string password);
     List<User> GetAll();
 }
-
 
 public class UserService : IUserService
 {

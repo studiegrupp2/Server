@@ -4,10 +4,10 @@ using Shared;
 
 namespace Server;
 
-
 class Program
 {
     private UserService userService = new UserService(new DbUserRepository());
+    private DbMessageRepository messageRepository = new DbMessageRepository();
     static void Main(string[] args)
     {
         // ChatApp.userService.Register("evelina", "hej123");
@@ -50,7 +50,7 @@ public class SocketConnectionHandler : IConnectionHandler
     private Socket serverSocket;
 
     private List<IConnection> connections;
-    private Dictionary<int, IMessageHandler> handlers;
+    private Dictionary<int, ICommandHandler> handlers;
 
     public SocketConnectionHandler()
     {
@@ -67,9 +67,11 @@ public class SocketConnectionHandler : IConnectionHandler
         this.serverSocket.Listen();
 
         this.connections = new List<IConnection>();
-        this.handlers = new Dictionary<int, IMessageHandler>();
+        this.handlers = new Dictionary<int, ICommandHandler>();
         this.handlers[10] = new RegisterHandler();
         this.handlers[11] = new LoginHandler();
+        // this.handlers[12] = new SendMessageHandler();
+        // this.handlers[13] = new SendPrivateMessageHandler();
     }
 
     public Shared.IConnection? Accept()
@@ -91,37 +93,64 @@ public class SocketConnectionHandler : IConnectionHandler
         {
             IConnection connection = this.connections[i];
 
-            foreach (Shared.Message message in connection.Receive())
+            foreach (Shared.Command command in connection.Receive())
             {
-                IMessageHandler handler = this.handlers[message.Id()];
-                handler.Handle(connection, message);
+                ICommandHandler handler = this.handlers[command.Id()];
+                handler.Handle(connection, command);
             }
         }
     }
 }
 
-public interface IMessageHandler
+public interface ICommandHandler
 {
-    void Handle(IConnection connection, Message message);
+    void Handle(IConnection connection, Command command);
 }
 
-public class RegisterHandler : IMessageHandler
+public class RegisterHandler : ICommandHandler
 {
     private UserService userService = new UserService(new DbUserRepository());
-    public void Handle(IConnection connection, Message message)
+    public void Handle(IConnection connection, Command command)
     {
-        Shared.RegisterUserMessage register = (Shared.RegisterUserMessage)message;
+        Shared.RegisterUserCommand register = (Shared.RegisterUserCommand)command;//message
         userService.Register(register.Name, register.Password);
     }
 }
 
-public class LoginHandler : IMessageHandler
+public class LoginHandler : ICommandHandler
 {
     private UserService userService = new UserService(new DbUserRepository());
     
-    public void Handle(IConnection connection, Message message)
+    public void Handle(IConnection connection, Command command)
     {
-        Shared.LoginMessage login = (Shared.LoginMessage)message;
+        Shared.LoginCommand login = (Shared.LoginCommand)command;//message
         userService.Login(login.Name, login.Password);
     }
 }
+
+// public class SendMessageHandler : ICommandHandler
+// {
+//     // private MessageService messageService = new MessageService(new DbMessageRepository())
+//     // 
+//     private DbMessageRepository messageRepository = new DbMessageRepository();
+
+//     public void Handle(IConnection connection, Command command)
+//     {
+//         Shared.SendMessageCommand globalmsg = (Shared.SendMessageCommand)command;
+//         messageRepository.Save(globalmsg);
+//     } 
+// }
+
+// public class SendPrivateMessageHandler : ICommandHandler
+// {
+//     // private DbMessageRepository messageRepository = new DbMessageRepository();
+//     private DbMessageRepository messageRepository = new DbMessageRepository();
+
+//     public void Handle(IConnection connection, Command command)
+//     {
+//         Shared.SendMessageCommand privatemsg = (Shared.SendMessageCommand)command;
+//         messageRepository.Save(privatemsg);
+        
+//     } 
+// }
+
