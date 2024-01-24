@@ -4,10 +4,17 @@ using Shared;
 
 namespace Server;
 
+
 class Program
 {
+    private UserService userService = new UserService(new DbUserRepository());
     static void Main(string[] args)
     {
+        // ChatApp.userService.Register("evelina", "hej123");
+        
+        // ChatApp.userService.Login("evelina", "hej123");
+        // userService.Login("christian", "hej");
+        
         IConnectionHandler connectionHandler = new SocketConnectionHandler();
 
         while (true)
@@ -28,6 +35,15 @@ public interface IConnectionHandler
     Shared.IConnection? Accept();
     void HandleReads();
 }
+
+// public class ChatApp
+// {
+//     public static UserService userService;
+//     public ChatApp() 
+//     {
+//         this.userService = new UserService(new DbUserRepository());
+//     }
+// }
 
 public class SocketConnectionHandler : IConnectionHandler
 {
@@ -91,17 +107,21 @@ public interface IMessageHandler
 
 public class RegisterHandler : IMessageHandler
 {
+    private UserService userService = new UserService(new DbUserRepository());
     public void Handle(IConnection connection, Message message)
     {
-        Console.WriteLine("Do register logic!");
+        Shared.RegisterUserMessage register = (Shared.RegisterUserMessage)message;
+        userService.Register(register.Name, register.Password);
     }
 }
 
 public class LoginHandler : IMessageHandler
 {
+    private UserService userService = new UserService(new DbUserRepository());
+    
     public void Handle(IConnection connection, Message message)
     {
         Shared.LoginMessage login = (Shared.LoginMessage)message;
-        Console.WriteLine("Do login logic! Name: " + login.Name);
+        userService.Login(login.Name, login.Password);
     }
 }
