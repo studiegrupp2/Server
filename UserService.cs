@@ -7,7 +7,7 @@ public interface IUserService
 {
     User Register(string userName, string password);
     User? Login(string userName, string password);
-    void Logout();
+    //void Logout();
 }
 
 public interface IUserRepository
@@ -19,13 +19,12 @@ public interface IUserRepository
 
 public class UserService : IUserService
 {
-    private IUserRepository users;
-    private User? loggedIn;
+    public IUserRepository users;
 
     public UserService(IUserRepository repository)
     {
         this.users = repository;
-        this.loggedIn = null;
+        
     }
 
     public User Register(string userName, string password)
@@ -45,14 +44,9 @@ public class UserService : IUserService
             return null;
         }
 
-        this.loggedIn = user;
+        
         Console.WriteLine($"{user.UserName} successfully logged in.");
         return user;
-    }
-
-    public void Logout()
-    {
-        this.loggedIn = null;
     }
 }
 
