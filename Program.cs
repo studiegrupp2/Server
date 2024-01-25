@@ -6,8 +6,11 @@ namespace Server;
 
 class Program
 {
+    public static UserService userService = new UserService(new DbUserRepository());
+    public static MessageService messageService = new MessageService(new DbMessageRepository());
+
     static void Main(string[] args)
-    {
+    {   
         IConnectionHandler connectionHandler = new SocketConnectionHandler();
 
         while (true)
@@ -17,8 +20,20 @@ class Program
             {
                 Console.WriteLine("A client has connected!");
             }
-
             connectionHandler.HandleReads();
+
+            //Console.WriteLine(userService.loggedIn.UserName);
+            
+            //TODO: Kanske fel med messageService, att loogedIn inte ligger i DbMessageRep...//
+            
+            // foreach (Message msg in messageService.messages.GetAll())
+            //     {
+            //         Console.WriteLine($"You have a new message from {msg.Sender}: {msg.Content}");
+            //     }
+            // foreach (User user in userService.users.GetAll())
+            // {
+            //     Console.WriteLine($"{user.UserName}");
+            // }
         }
     }
 }
@@ -29,15 +44,29 @@ public interface IConnectionHandler
     void HandleReads();
 }
 
+// public class ChatApp
+// {
+//     public static UserService userService;
+//     public ChatApp() 
+//     {
+//         this.userService = new UserService(new DbUserRepository());
+//     }
+// }
+
 public class SocketConnectionHandler : IConnectionHandler
 {
     private Socket serverSocket;
 
-    private List<IConnection> connections;
-    private Dictionary<int, IMessageHandler> handlers;
+    public List<IConnection> connections;
+    private Dictionary<int, ICommandHandler> handlers;
+
+    public UserService userService;
+    public MessageService messageService;
 
     public SocketConnectionHandler()
     {
+        this.userService = new UserService(new DbUserRepository());
+        this.messageService = new MessageService(new DbMessageRepository());
         IPAddress iPAddress = new IPAddress(new byte[] { 127, 0, 0, 1 });
         IPEndPoint iPEndPoint = new IPEndPoint(iPAddress, 27800);
 
@@ -51,9 +80,11 @@ public class SocketConnectionHandler : IConnectionHandler
         this.serverSocket.Listen();
 
         this.connections = new List<IConnection>();
-        this.handlers = new Dictionary<int, IMessageHandler>();
-        this.handlers[10] = new RegisterHandler();
+        this.handlers = new Dictionary<int, ICommandHandler>();
+        this.handlers[10] = new RegisterHandler(); //service?
         this.handlers[11] = new LoginHandler();
+        this.handlers[12] = new SendMessageHandler();
+        this.handlers[13] = new SendPrivateMessageHandler();
     }
 
     public Shared.IConnection? Accept()
@@ -75,33 +106,69 @@ public class SocketConnectionHandler : IConnectionHandler
         {
             IConnection connection = this.connections[i];
 
-            foreach (Shared.Message message in connection.Receive())
+            foreach (Shared.Command command in connection.Receive())
             {
-                IMessageHandler handler = this.handlers[message.Id()];
-                handler.Handle(connection, message);
+                ICommandHandler handler = this.handlers[command.Id()];
+                handler.Handle(connection, command, this);
             }
         }
     }
 }
 
-public interface IMessageHandler
+public interface ICommandHandler
 {
-    void Handle(IConnection connection, Message message);
+    void Handle(IConnection connection, Command command, SocketConnectionHandler handler);
 }
 
-public class RegisterHandler : IMessageHandler
+public class RegisterHandler : ICommandHandler
 {
-    public void Handle(IConnection connection, Message message)
+    public void Handle(IConnection connection, Command command, SocketConnectionHandler handler)
     {
-        Console.WriteLine("Do register logic!");
+        Shared.RegisterUserCommand register = (Shared.RegisterUserCommand)command;//message
+        handler.userService.Register(register.Name, register.Password);
     }
 }
 
-public class LoginHandler : IMessageHandler
+public class LoginHandler : ICommandHandler
 {
-    public void Handle(IConnection connection, Message message)
+    
+    public void Handle(IConnection connection, Command command, SocketConnectionHandler handler)
     {
-        Shared.LoginMessage login = (Shared.LoginMessage)message;
-        Console.WriteLine("Do login logic! Name: " + login.Name);
+        Shared.LoginCommand login = (Shared.LoginCommand)command;//message
+        Shared.User? user = handler.userService.Login(login.Name, login.Password);
+        if (user != null) {
+            connection.SetUser(user);
+            // TODO: Send message to client: "You logged in".
+        } else {
+            // TODO: Send message to client: "Login failed".
+        }
     }
 }
+
+public class SendMessageHandler : ICommandHandler
+{
+    public void Handle(IConnection connection, Command command, SocketConnectionHandler handler)
+    {
+        Console.WriteLine($"User {connection.GetUser().UserName} has sent a message.");
+        Shared.SendMessageCommand globalmsg = (Shared.SendMessageCommand)command;
+        handler.messageService.Create(connection.GetUser().UserName, "reciever", globalmsg.Content);
+        foreach(var connectedClient in handler.connections)
+        {
+           if (connectedClient == connection)
+           {
+                connectedClient.Send(globalmsg);
+           }
+        }
+    } 
+}
+
+public class SendPrivateMessageHandler : ICommandHandler
+{
+    public void Handle(IConnection connection, Command command, SocketConnectionHandler handler)
+    {
+        Shared.SendPrivateMessageCommand privatemsg = (Shared.SendPrivateMessageCommand)command;
+        // messageRepository.Save(privatemsg);
+        handler.messageService.Create(privatemsg.Sender, privatemsg.Receiver, privatemsg.Content);
+    } 
+}
+

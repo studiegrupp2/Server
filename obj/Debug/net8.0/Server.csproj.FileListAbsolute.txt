@@ -17,3 +17,17 @@
 /Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/obj/Debug/net8.0/Server.pdb
 /Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/obj/Debug/net8.0/Server.genruntimeconfig.cache
 /Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/obj/Debug/net8.0/ref/Server.dll
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/AWSSDK.Core.dll
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/AWSSDK.SecurityToken.dll
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/DnsClient.dll
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/MongoDB.Bson.dll
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/MongoDB.Driver.dll
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/MongoDB.Driver.Core.dll
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/MongoDB.Libmongocrypt.dll
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/SharpCompress.dll
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/Snappier.dll
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/ZstdSharp.dll
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/runtimes/linux/native/libmongocrypt.so
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/runtimes/osx/native/libmongocrypt.dylib
+/Users/isakgunnardo/Ecutbildning/backend1/Gruppuppgift/Server/bin/Debug/net8.0/runtimes/win/native/mongocrypt.dll
