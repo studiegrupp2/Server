@@ -51,6 +51,7 @@ public class DbMessageRepository : IMessageRepository
     {
         this.collection.InsertOne(message);
     }
+
     public List<Message> GetAll()
     {
        var filter = Builders<Message>.Filter.Empty;

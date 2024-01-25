@@ -131,15 +131,25 @@ public class RegisterHandler : ICommandHandler
 
 public class LoginHandler : ICommandHandler
 {
-    
+
     public void Handle(IConnection connection, Command command, SocketConnectionHandler handler)
     {
         Shared.LoginCommand login = (Shared.LoginCommand)command;//message
         Shared.User? user = handler.userService.Login(login.Name, login.Password);
-        if (user != null) {
+        if (user != null)
+        {
             connection.SetUser(user);
-            // TODO: Send message to client: "You logged in".
-        } else {
+
+            foreach (Message message in handler.messageService.messages.GetAll())
+            {
+                connection.Send(new SendMessageCommand(message.Sender, message.Content));
+                handler.messageService.Create(connection.GetUser().UserName, "reciever", message.Content);
+                // connectedClient.Send(globalmsg);
+            }
+
+        }
+        else
+        {
             // TODO: Send message to client: "Login failed".
         }
     }
@@ -149,16 +159,11 @@ public class SendMessageHandler : ICommandHandler
 {
     public void Handle(IConnection connection, Command command, SocketConnectionHandler handler)
     {
+        
         Console.WriteLine($"User {connection.GetUser().UserName} has sent a message.");
         Shared.SendMessageCommand globalmsg = (Shared.SendMessageCommand)command;
         handler.messageService.Create(connection.GetUser().UserName, "reciever", globalmsg.Content);
-        foreach(var connectedClient in handler.connections)
-        {
-           if (connectedClient == connection)
-           {
-                connectedClient.Send(globalmsg);
-           }
-        }
+        
     } 
 }
 
@@ -168,7 +173,7 @@ public class SendPrivateMessageHandler : ICommandHandler
     {
         Shared.SendPrivateMessageCommand privatemsg = (Shared.SendPrivateMessageCommand)command;
         // messageRepository.Save(privatemsg);
-        handler.messageService.Create(privatemsg.Sender, privatemsg.Receiver, privatemsg.Content);
+        handler.messageService.Create(connection.GetUser().UserName, privatemsg.Receiver, privatemsg.Content);
     } 
 }
 
