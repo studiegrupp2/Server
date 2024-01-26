@@ -10,7 +10,7 @@ class Program
     public static MessageService messageService = new MessageService(new DbMessageRepository());
 
     static void Main(string[] args)
-    {   
+    {
         IConnectionHandler connectionHandler = new SocketConnectionHandler();
 
         while (true)
@@ -23,9 +23,9 @@ class Program
             connectionHandler.HandleReads();
 
             //Console.WriteLine(userService.loggedIn.UserName);
-            
+
             //TODO: Kanske fel med messageService, att loogedIn inte ligger i DbMessageRep...//
-            
+
             // foreach (Message msg in messageService.messages.GetAll())
             //     {
             //         Console.WriteLine($"You have a new message from {msg.Sender}: {msg.Content}");
@@ -139,6 +139,8 @@ public class LoginHandler : ICommandHandler
         if (user != null)
         {
             connection.SetUser(user);
+            //TODO: Send messege to client login success
+            connection.Send(new SendMessageCommand($"Server", $"{user.UserName} Successfully logged in"));
 
             foreach (Message message in handler.messageService.messages.GetAll())
             {
@@ -150,6 +152,7 @@ public class LoginHandler : ICommandHandler
         }
         else
         {
+           connection.Send(new SendMessageCommand($"Server", "Login failed. Wrong username or password."));
             // TODO: Send message to client: "Login failed".
         }
     }
@@ -159,12 +162,15 @@ public class SendMessageHandler : ICommandHandler
 {
     public void Handle(IConnection connection, Command command, SocketConnectionHandler handler)
     {
-        
         Console.WriteLine($"User {connection.GetUser().UserName} has sent a message.");
         Shared.SendMessageCommand globalmsg = (Shared.SendMessageCommand)command;
         handler.messageService.Create(connection.GetUser().UserName, "reciever", globalmsg.Content);
-        
-    } 
+
+        foreach (IConnection connectedClient in handler.connections)
+        {
+            connectedClient.Send(new SendMessageCommand(globalmsg.Sender, globalmsg.Content));
+        }
+    }
 }
 
 public class SendPrivateMessageHandler : ICommandHandler
@@ -174,6 +180,6 @@ public class SendPrivateMessageHandler : ICommandHandler
         Shared.SendPrivateMessageCommand privatemsg = (Shared.SendPrivateMessageCommand)command;
         // messageRepository.Save(privatemsg);
         handler.messageService.Create(connection.GetUser().UserName, privatemsg.Receiver, privatemsg.Content);
-    } 
+    }
 }
 

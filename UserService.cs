@@ -36,17 +36,18 @@ public class UserService : IUserService
 
     public User? Login(string userName, string password)
     {
+        
         User? user = this.users.GetUserByUserNameAndPassword(userName, password);
         if (user == null)
         {
+            //fråga william
             //todo throw exception?
             Console.WriteLine("Wrong username or password.");
             return null;
         }
-
-        
         Console.WriteLine($"{user.UserName} successfully logged in.");
         return user;
+        
     }
 }
 
