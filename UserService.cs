@@ -15,6 +15,8 @@ public interface IUserRepository
     void Save (User user);
     User? GetUserByUserNameAndPassword(string userName, string password);
     List<User> GetAll();
+
+    User? GetUserByUserName(string userName);
 }
 
 public class UserService : IUserService
@@ -29,6 +31,21 @@ public class UserService : IUserService
 
     public User Register(string userName, string password)
     {
+        if (string.IsNullOrWhiteSpace(userName))
+        {
+            throw new ArgumentException("Username cannot be null or empty");
+        }
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            throw new ArgumentException("Password cannot be null or empty");
+        }
+
+        User? exsisting = this.users.GetUserByUserName(userName);
+        if (exsisting != null)
+        {
+            throw new ArgumentException("Username taken");
+        }
+
         User user = new User(userName, password);
         this.users.Save(user);
         return user;
@@ -41,8 +58,8 @@ public class UserService : IUserService
         if (user == null)
         {
             //fråga william
+            throw new ArgumentException("Wrong username or password.");
             //todo throw exception?
-            Console.WriteLine("Wrong username or password.");
             return null;
         }
         Console.WriteLine($"{user.UserName} successfully logged in.");
@@ -74,6 +91,17 @@ public class DbUserRepository : IUserRepository
     {
         var filter = Builders<User>.Filter.Where(u => u.UserName == userName && u.Password == password);
         return this.collection.Find(filter).First();
+    }
+
+     public User? GetUserByUserName(string userName)
+    {
+        var filter = Builders<User>.Filter.Where(u => u.UserName == userName);
+        var result = this.collection.Find(filter);
+        if (result.CountDocuments() == 0)
+        {
+            return null;
+        }
+        return result.First();
     }
 
     public void Save(User user)

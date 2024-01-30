@@ -106,6 +106,8 @@ public class SocketConnectionHandler : IConnectionHandler
         {
             IConnection connection = this.connections[i];
 
+            //todo kolla om en klient disconnectar
+
             foreach (Shared.Command command in connection.Receive())
             {
                 ICommandHandler handler = this.handlers[command.Id()];
@@ -141,11 +143,14 @@ public class LoginHandler : ICommandHandler
             connection.SetUser(user);
             //TODO: Send messege to client login success
             connection.Send(new SendMessageCommand($"Server", $"{user.UserName} Successfully logged in"));
-
+            foreach (IConnection connectedClient in handler.connections)
+            {
+                connectedClient.Send(new SendMessageCommand("Server", $"{user.UserName} logged in."));
+            }
             foreach (Message message in handler.messageService.messages.GetAll())
             {
                 connection.Send(new SendMessageCommand(message.Sender, message.Content));
-                handler.messageService.Create(connection.GetUser().UserName, "reciever", message.Content);
+                // handler.messageService.Create(connection.GetUser().UserName, "reciever", message.Content);
                 // connectedClient.Send(globalmsg);
             }
 
