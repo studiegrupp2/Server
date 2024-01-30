@@ -149,7 +149,10 @@ public class LoginHandler : ICommandHandler
             }
             foreach (Message message in handler.messageService.messages.GetAll())
             {
-                connection.Send(new SendMessageCommand(message.Sender, message.Content));
+                if( message.Receiver == "reciever" || message.Receiver == user.UserName) {
+                    connection.Send(new SendMessageCommand(message.Sender, message.Content));
+                }
+                
                 // handler.messageService.Create(connection.GetUser().UserName, "reciever", message.Content);
                 // connectedClient.Send(globalmsg);
             }
@@ -183,8 +186,14 @@ public class SendPrivateMessageHandler : ICommandHandler
     public void Handle(IConnection connection, Command command, SocketConnectionHandler handler)
     {
         Shared.SendPrivateMessageCommand privatemsg = (Shared.SendPrivateMessageCommand)command;
-        // messageRepository.Save(privatemsg);
         handler.messageService.Create(connection.GetUser().UserName, privatemsg.Receiver, privatemsg.Content);
+        foreach (IConnection connectedClient in handler.connections)
+        {
+            if(connectedClient.GetUser().UserName == privatemsg.Receiver){
+            connectedClient.Send(new SendMessageCommand(privatemsg.Sender, privatemsg.Content));
+
+            }
+        }
     }
 }
 

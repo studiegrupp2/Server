@@ -56,8 +56,10 @@ public class DbMessageRepository : IMessageRepository
     {
        var sort = Builders<Message>.Sort.Descending("timestamp");
        var filter = Builders<Message>.Filter.Empty;
-       return this.collection.Find(filter).Sort(sort).Limit(30).ToList(); //Just nu "klipper den" 0-30 istället för 30-uppåt   sort{sort -1}
-       //return messageList;
+        var latest30Messages = collection.Find(filter).Sort(sort).Limit(30).ToList();
+        latest30Messages.Reverse();
+        return latest30Messages;
+    //    return this.collection.Find(filter).Sort(sort).Limit(30).ToList(); 
     }
     
 }
