@@ -85,6 +85,8 @@ public class SocketConnectionHandler : IConnectionHandler
         this.handlers[11] = new LoginHandler();
         this.handlers[12] = new SendMessageHandler();
         this.handlers[13] = new SendPrivateMessageHandler();
+        this.handlers[14] = new LogoutHandler();
+        this.handlers[15] = new DisconnectHandler();
     }
 
     public Shared.IConnection? Accept()
@@ -114,6 +116,8 @@ public class SocketConnectionHandler : IConnectionHandler
                 handler.Handle(connection, command, this);
             }
         }
+
+        // connections.Remove(clientSocket)
     }
 }
 
@@ -133,7 +137,6 @@ public class RegisterHandler : ICommandHandler
 
 public class LoginHandler : ICommandHandler
 {
-
     public void Handle(IConnection connection, Command command, SocketConnectionHandler handler)
     {
         Shared.LoginCommand login = (Shared.LoginCommand)command;//message
@@ -141,27 +144,29 @@ public class LoginHandler : ICommandHandler
         if (user != null)
         {
             connection.SetUser(user);
-            //TODO: Send messege to client login success
-            connection.Send(new SendMessageCommand($"Server", $"{user.UserName} Successfully logged in"));
+
+            connection.Send(new SendMessageCommand($"Server", $"You Successfully logged in"));
             foreach (IConnection connectedClient in handler.connections)
             {
-                connectedClient.Send(new SendMessageCommand("Server", $"{user.UserName} logged in."));
+                if (connectedClient != connection)
+                { //Kollar om users som är anslutna är samma user som loggar in 
+                    connectedClient.Send(new SendMessageCommand("Server", $"{user.UserName} logged in."));
+                }
             }
-            foreach (Message message in handler.messageService.messages.GetAll())
+            foreach (Message message in handler.messageService.messages.GetAll(user.UserName))
             {
-                if( message.Receiver == "reciever" || message.Receiver == user.UserName) {
+                if (message.Receiver == "All" || message.Receiver == user.UserName)
+                {
                     connection.Send(new SendMessageCommand(message.Sender, message.Content));
                 }
-                
+
                 // handler.messageService.Create(connection.GetUser().UserName, "reciever", message.Content);
                 // connectedClient.Send(globalmsg);
             }
-
         }
         else
         {
-           connection.Send(new SendMessageCommand($"Server", "Login failed. Wrong username or password."));
-            // TODO: Send message to client: "Login failed".
+            connection.Send(new SendMessageCommand($"Server", "Login failed. Wrong username or password."));
         }
     }
 }
@@ -172,7 +177,7 @@ public class SendMessageHandler : ICommandHandler
     {
         Console.WriteLine($"User {connection.GetUser().UserName} has sent a message.");
         Shared.SendMessageCommand globalmsg = (Shared.SendMessageCommand)command;
-        handler.messageService.Create(connection.GetUser().UserName, "reciever", globalmsg.Content);
+        handler.messageService.Create(connection.GetUser().UserName, "All", globalmsg.Content);
 
         foreach (IConnection connectedClient in handler.connections)
         {
@@ -189,11 +194,45 @@ public class SendPrivateMessageHandler : ICommandHandler
         handler.messageService.Create(connection.GetUser().UserName, privatemsg.Receiver, privatemsg.Content);
         foreach (IConnection connectedClient in handler.connections)
         {
-            if(connectedClient.GetUser().UserName == privatemsg.Receiver){
-            connectedClient.Send(new SendMessageCommand(privatemsg.Sender, privatemsg.Content));
-
+            if (connectedClient.GetUser().UserName == privatemsg.Receiver)
+            {
+                connectedClient.Send(new SendMessageCommand(privatemsg.Sender, privatemsg.Content));
             }
         }
     }
 }
 
+
+public class LogoutHandler : ICommandHandler
+{
+    public void Handle(IConnection connection, Command command, SocketConnectionHandler handler)
+    {
+        Shared.LogoutCommand logout = (Shared.LogoutCommand)command;//message
+        handler.userService.Logout(logout.UserName);
+        connection.Send(new SendMessageCommand($"Server", $"You logged out."));
+
+
+
+        foreach (IConnection connectedClient in handler.connections)
+        {
+            if (connectedClient != connection)
+            { //Kollar om users som är anslutna är samma user som loggar in 
+                connectedClient.Send(new SendMessageCommand("Server", $"{logout.UserName} logged out."));
+            }
+        }
+    }
+}
+
+public class DisconnectHandler : ICommandHandler
+{
+    public void Handle(IConnection connection, Command command, SocketConnectionHandler handler)
+    {
+        // connection.Remove();
+        // connection.Clear()
+
+        handler.connections.Remove(connection);
+        Console.WriteLine("A client has Disconnected!");
+
+
+    }
+}

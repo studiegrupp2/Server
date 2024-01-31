@@ -7,12 +7,12 @@ public interface IUserService
 {
     User Register(string userName, string password);
     User? Login(string userName, string password);
-    //void Logout();
+    void Logout(string userName);
 }
 
 public interface IUserRepository
 {
-    void Save (User user);
+    void Save(User user);
     User? GetUserByUserNameAndPassword(string userName, string password);
     List<User> GetAll();
 
@@ -22,28 +22,37 @@ public interface IUserRepository
 public class UserService : IUserService
 {
     public IUserRepository users;
+    private User? loggedIn;
 
     public UserService(IUserRepository repository)
     {
         this.users = repository;
-        
+        this.loggedIn = null;
     }
 
     public User Register(string userName, string password)
     {
-        if (string.IsNullOrWhiteSpace(userName))
+        try
         {
-            throw new ArgumentException("Username cannot be null or empty");
-        }
-        if (string.IsNullOrWhiteSpace(password))
-        {
-            throw new ArgumentException("Password cannot be null or empty");
-        }
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                throw new ArgumentException("Username cannot be null or empty");
+            }
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new ArgumentException("Password cannot be null or empty");
+            }
 
-        User? exsisting = this.users.GetUserByUserName(userName);
-        if (exsisting != null)
+        }
+        catch (FormatException exception)
         {
-            throw new ArgumentException("Username taken");
+            User? existing = this.users.GetUserByUserName(userName);
+
+            if (existing != null)
+            {
+                throw new ArgumentException("Username taken");
+            }
+
         }
 
         User user = new User(userName, password);
@@ -53,18 +62,30 @@ public class UserService : IUserService
 
     public User? Login(string userName, string password)
     {
-        
-        User? user = this.users.GetUserByUserNameAndPassword(userName, password);
-        if (user == null)
+        try
         {
-            //fråga william
+            User? user = this.users.GetUserByUserNameAndPassword(userName, password);
+            Console.WriteLine($"{user.UserName} successfully logged in.");
+            this.loggedIn = user;
+            return user;
+        }
+        catch (Exception exception)
+        {
+            //try catch
+            // if(userName == null){
+
+            // }
             throw new ArgumentException("Wrong username or password.");
             //todo throw exception?
             return null;
         }
-        Console.WriteLine($"{user.UserName} successfully logged in.");
-        return user;
-        
+    }
+
+    public void Logout(string userName)
+    {
+        User? user = this.users.GetUserByUserName(userName);
+        Console.WriteLine($"{user.UserName} successfully logged out.");
+        this.loggedIn = null;
     }
 }
 
@@ -83,17 +104,27 @@ public class DbUserRepository : IUserRepository
 
     public List<User> GetAll()
     {
-       var filter = Builders<User>.Filter.Empty;
-       return this.collection.Find(filter).ToList();
+        var filter = Builders<User>.Filter.Empty;
+        return this.collection.Find(filter).ToList();
     }
 
     public User? GetUserByUserNameAndPassword(string userName, string password)
     {
-        var filter = Builders<User>.Filter.Where(u => u.UserName == userName && u.Password == password);
-        return this.collection.Find(filter).First();
+        try
+        {
+            var filter = Builders<User>.Filter.Where(u => u.UserName == userName && u.Password == password);
+            return this.collection.Find(filter).First();
+        }
+        catch (FormatException exception)
+        {
+            throw new ArgumentException("Wrong username or password.");
+            //todo throw exception?
+            return null;
+        }
+
     }
 
-     public User? GetUserByUserName(string userName)
+    public User? GetUserByUserName(string userName)
     {
         var filter = Builders<User>.Filter.Where(u => u.UserName == userName);
         var result = this.collection.Find(filter);
