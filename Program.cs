@@ -131,7 +131,17 @@ public class RegisterHandler : ICommandHandler
     public void Handle(IConnection connection, Command command, SocketConnectionHandler handler)
     {
         Shared.RegisterUserCommand register = (Shared.RegisterUserCommand)command;//message
-        handler.userService.Register(register.Name, register.Password);
+        Shared.User? user = handler.userService.Register(register.Name, register.Password);
+       // handler.userService.Register(register.Name, register.Password);
+
+        if (user != null)
+        {
+            connection.Send(new SendMessageCommand($"Server", $"You Successfully registered!"));
+        }
+        else
+        {
+            connection.Send(new SendMessageCommand($"Server", "Username taken or empty username or password."));
+        }
     }
 }
 
@@ -227,12 +237,7 @@ public class DisconnectHandler : ICommandHandler
 {
     public void Handle(IConnection connection, Command command, SocketConnectionHandler handler)
     {
-        // connection.Remove();
-        // connection.Clear()
-
         handler.connections.Remove(connection);
         Console.WriteLine("A client has Disconnected!");
-
-
     }
 }

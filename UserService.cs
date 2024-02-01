@@ -32,7 +32,19 @@ public class UserService : IUserService
 
     public User Register(string userName, string password)
     {
+        User? existing = this.users.GetUserByUserName(userName);
+        if (existing != null)
+            {
+                Console.WriteLine("Username taken");
+                return null;
+            }
         try
+        {
+            User user = new User(userName, password);
+            this.users.Save(user);
+            return user;
+        }
+        catch (FormatException exception)
         {
             if (string.IsNullOrWhiteSpace(userName))
             {
@@ -42,41 +54,23 @@ public class UserService : IUserService
             {
                 throw new ArgumentException("Password cannot be null or empty");
             }
-
+            return null;
+            //User? existing = this.users.GetUserByUserName(userName);
         }
-        catch (FormatException exception)
-        {
-            User? existing = this.users.GetUserByUserName(userName);
-
-            if (existing != null)
-            {
-                throw new ArgumentException("Username taken");
-            }
-
-        }
-
-        User user = new User(userName, password);
-        this.users.Save(user);
-        return user;
     }
 
     public User? Login(string userName, string password)
     {
         try
         {
-            User? user = this.users.GetUserByUserNameAndPassword(userName, password);
+            User user = this.users.GetUserByUserNameAndPassword(userName, password);
             Console.WriteLine($"{user.UserName} successfully logged in.");
             this.loggedIn = user;
             return user;
         }
         catch (Exception exception)
         {
-            //try catch
-            // if(userName == null){
-
-            // }
-            throw new ArgumentException("Wrong username or password.");
-            //todo throw exception?
+            Console.WriteLine("Wrong username or password.");
             return null;
         }
     }
