@@ -27,7 +27,7 @@ public class MessageService : IMessageService
 }
 public interface IMessageRepository
 {
-    void Save (Message message);
+    void Save(Message message);
     List<Message> GetAll(string receiver);
     public List<Message> GetAllPublic();
 }
@@ -38,14 +38,14 @@ public class DbMessageRepository : IMessageRepository
     IMongoDatabase db;
     IMongoCollection<Message> collection;
 
-    
+
     public DbMessageRepository()
     {
         this.dbClient = new MongoClient("mongodb://localhost:27017/chattprogram");
         this.db = dbClient.GetDatabase("chattprogram");
         this.collection = db.GetCollection<Message>("messages");
     }
-    
+
     public void Save(Message message)
     {
         this.collection.InsertOne(message);
@@ -55,7 +55,6 @@ public class DbMessageRepository : IMessageRepository
     {
         var filterPrivate = Builders<Message>.Filter.Eq(message => message.Receiver, "All");
         var sort = Builders<Message>.Sort.Descending("timestamp");
-        //var filter = Builders<Message>.Filter.Empty;
         var latest30Messages = collection.Find(filterPrivate).Sort(sort).Limit(30).ToList();
         return latest30Messages;
     }
@@ -68,16 +67,16 @@ public class DbMessageRepository : IMessageRepository
         var filter = Builders<Message>.Filter.Empty;
         var latest30PrivateMessages = collection.Find(filterPrivate).Sort(sort).Limit(30).ToList();
         latest30PrivateMessages.Reverse();
-        
+
         int index = latest30PrivateMessages.Count();
 
         for (int i = index; i > 0; i--)
         {
-            allMessages.RemoveAt((allMessages.Count()) -i);
+            allMessages.RemoveAt((allMessages.Count()) - i);
         }
 
         int allMessageCount = allMessages.Count();
-      
+
         if (index <= 0)
         {
             allMessages.Reverse();
@@ -86,14 +85,11 @@ public class DbMessageRepository : IMessageRepository
         else
         {
             allMessages.Reverse();
-            for (int i = index; i > 0; i --) //range i = -1 
+            for (int i = index; i > 0; i--) //range i = -1 
             {
-                allMessages.Add(latest30PrivateMessages[i-1]);
+                allMessages.Add(latest30PrivateMessages[i - 1]);
             }
             return allMessages;
         }
     }
 }
-
-
-//Todo     Fixa så att all får meddelandena utskrivna åt rätt håll, just nu får man bara det utskrivet åt rätt håll OM man har private msg skickade till
