@@ -55,7 +55,6 @@ public class UserService : IUserService
                 throw new ArgumentException("Password cannot be null or empty");
             }
             return null;
-            //User? existing = this.users.GetUserByUserName(userName);
         }
     }
 
@@ -112,7 +111,6 @@ public class DbUserRepository : IUserRepository
         catch (FormatException exception)
         {
             throw new ArgumentException("Wrong username or password.");
-            //todo throw exception?
             return null;
         }
 
