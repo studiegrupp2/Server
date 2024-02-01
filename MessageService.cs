@@ -27,10 +27,9 @@ public class MessageService : IMessageService
 }
 public interface IMessageRepository
 {
-    
     void Save (Message message);
-    List<Message> GetAll();
-
+    List<Message> GetAll(string receiver);
+    public List<Message> GetAllPublic();
 }
 
 public class DbMessageRepository : IMessageRepository
@@ -51,11 +50,50 @@ public class DbMessageRepository : IMessageRepository
     {
         this.collection.InsertOne(message);
     }
-    public List<Message> GetAll()
+
+    public List<Message> GetAllPublic()
     {
-       var filter = Builders<Message>.Filter.Empty;
-       return this.collection.Find(filter).ToList();
-       //return messageList;
+        var filterPrivate = Builders<Message>.Filter.Eq(message => message.Receiver, "All");
+        var sort = Builders<Message>.Sort.Descending("timestamp");
+        //var filter = Builders<Message>.Filter.Empty;
+        var latest30Messages = collection.Find(filterPrivate).Sort(sort).Limit(30).ToList();
+        return latest30Messages;
     }
-    
+
+    public List<Message> GetAll(string receiver)
+    {
+        var allMessages = this.GetAllPublic();
+        var filterPrivate = Builders<Message>.Filter.Eq(message => message.Receiver, receiver);
+        var sort = Builders<Message>.Sort.Descending("timestamp");
+        var filter = Builders<Message>.Filter.Empty;
+        var latest30PrivateMessages = collection.Find(filterPrivate).Sort(sort).Limit(30).ToList();
+        latest30PrivateMessages.Reverse();
+        
+        int index = latest30PrivateMessages.Count();
+
+        for (int i = index; i > 0; i--)
+        {
+            allMessages.RemoveAt((allMessages.Count()) -i);
+        }
+
+        int allMessageCount = allMessages.Count();
+      
+        if (index <= 0)
+        {
+            allMessages.Reverse();
+            return allMessages;
+        }
+        else
+        {
+            allMessages.Reverse();
+            for (int i = index; i > 0; i --) //range i = -1 
+            {
+                allMessages.Add(latest30PrivateMessages[i-1]);
+            }
+            return allMessages;
+        }
+    }
 }
+
+
+//Todo     Fixa så att all får meddelandena utskrivna åt rätt håll, just nu får man bara det utskrivet åt rätt håll OM man har private msg skickade till
