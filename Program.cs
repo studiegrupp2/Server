@@ -21,7 +21,6 @@ class Program
                 Console.WriteLine("A client has connected!");
             }
             connectionHandler.HandleReads();
-
         }
     }
 }
@@ -88,16 +87,12 @@ public class SocketConnectionHandler : IConnectionHandler
         {
             IConnection connection = this.connections[i];
 
-
-
             foreach (Shared.Command command in connection.Receive())
             {
                 ICommandHandler handler = this.handlers[command.Id()];
                 handler.Handle(connection, command, this);
             }
         }
-
-
     }
 }
 
@@ -112,7 +107,6 @@ public class RegisterHandler : ICommandHandler
     {
         Shared.RegisterUserCommand register = (Shared.RegisterUserCommand)command;//message
         Shared.User? user = handler.userService.Register(register.Name, register.Password);
-
 
         if (user != null)
         {
@@ -156,7 +150,6 @@ public class LoginHandler : ICommandHandler
                         connection.Send(new SendPrivateMessageCommand(message.Sender, message.Receiver, message.Content));
                     }
                 }
-
             }
         }
         else
@@ -197,7 +190,6 @@ public class SendPrivateMessageHandler : ICommandHandler
         }
     }
 }
-
 
 public class LogoutHandler : ICommandHandler
 {
